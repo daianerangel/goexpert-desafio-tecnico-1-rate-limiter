@@ -2,12 +2,15 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	rl := NewRateLimiter()
+	redisAddr := os.Getenv("REDIS_ADDR")
+	persistence := NewRedisPersistence(redisAddr)
+	rl := NewRateLimiter(persistence)
 	r := mux.NewRouter()
 	r.Use(RateLimitMiddleware(rl))
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

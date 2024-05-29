@@ -7,14 +7,14 @@ import (
 )
 
 func TestRateLimiter(t *testing.T) {
-	rl := NewRateLimiter()
+	redisAddr := "localhost:6379"
+	persistence := NewRedisPersistence(redisAddr)
+	rl := NewRateLimiter(persistence)
 	handler := RateLimitMiddleware(rl)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-
 	req, _ := http.NewRequest("GET", "/", nil)
 	req.Header.Set("API_KEY", "default")
-
 	for i := 0; i < 10; i++ {
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)

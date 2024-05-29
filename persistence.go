@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// Persistence defines the interface for the persistence layer
 type Persistence interface {
 	Get(ctx context.Context, key string) (int, error)
 	Incr(ctx context.Context, key string) error
