@@ -51,7 +51,7 @@ func RemoveRedis(containerID string) error {
 	}
 	return nil
 }
-func TestRateLimiter(t *testing.T) {
+func TestRateLimiterDefaultToken(t *testing.T) {
 	containerID, err := StartRedis()
 	if err != nil {
 		t.Fatalf("could not start Redis container: %v", err)
@@ -80,3 +80,64 @@ func TestRateLimiter(t *testing.T) {
 		}
 	}
 }
+
+func TestRateLimiterPremiumToken(t *testing.T) {
+	containerID, err := StartRedis()
+	if err != nil {
+		t.Fatalf("could not start Redis container: %v", err)
+	}
+	defer StopRedis(containerID) 
+	defer RemoveRedis(containerID) 
+
+	// Wait for Redis to be ready
+	time.Sleep(5 * time.Second)
+
+	redisAddr := "localhost:6379"
+	persistence := NewRedisPersistence(redisAddr)
+	rl := NewRateLimiter(persistence)
+	handler := RateLimitMiddleware(rl)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Set("API_KEY", "premium")
+	for i := 0; i < 11; i++ {
+		rr := httptest.NewRecorder()
+		handler.ServeHTTP(rr, req)
+		if i < 10 && rr.Code != http.StatusOK {
+			t.Errorf("expected status OK, got %v", rr.Code)
+		} else if i >= 11 && rr.Code != http.StatusTooManyRequests {
+			t.Errorf("expected status Too Many Requests, got %v", rr.Code)
+		}
+	}
+}
+
+func TestRateLimiterIP(t *testing.T) {
+	containerID, err := StartRedis()
+	if err != nil {
+		t.Fatalf("could not start Redis container: %v", err)
+	}
+	defer StopRedis(containerID) 
+	defer RemoveRedis(containerID) 
+
+	// Wait for Redis to be ready
+	time.Sleep(5 * time.Second)
+
+	redisAddr := "localhost:6379"
+	persistence := NewRedisPersistence(redisAddr)
+	rl := NewRateLimiter(persistence)
+	handler := RateLimitMiddleware(rl)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	req, _ := http.NewRequest("GET", "/", nil)
+
+	for i := 0; i < 11; i++ {
+		rr := httptest.NewRecorder()
+		handler.ServeHTTP(rr, req)
+		if i < 4 && rr.Code != http.StatusOK {
+			t.Errorf("expected status OK, got %v", rr.Code)
+		} else if i >= 11 && rr.Code != http.StatusTooManyRequests {
+			t.Errorf("expected status Too Many Requests, got %v", rr.Code)
+		}
+	}
+}
+

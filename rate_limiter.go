@@ -24,7 +24,8 @@ func NewRateLimiter(persistence Persistence) *RateLimiter {
 	ipLimit, _ := strconv.Atoi(os.Getenv("IP_LIMIT"))
 	blockTime, _ := strconv.Atoi(os.Getenv("BLOCK_TIME"))
 	tokenLimit := make(map[string]int)
-	tokenLimit["default"] = 5 // Default token limit
+	tokenLimit["default"], _ = strconv.Atoi(os.Getenv("DEFAULT_TOKEN_LIMIT")) // Default token limit
+	tokenLimit["premium"], _ = strconv.Atoi(os.Getenv("PREMIUM_TOKEN_LIMIT"))
 	// Add more token limits as needed
 
 	return &RateLimiter{

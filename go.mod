@@ -3,7 +3,6 @@ module goexpert-desafio-tecnico-1-rate-limiter
 go 1.22.3
 
 require (
-	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
