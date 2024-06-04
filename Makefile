@@ -4,5 +4,9 @@ docker-up:
 docker-down:
 	docker-compose down
 
-tests:
+delete-redis:
+	chmod +x delete-redis.sh
+	./delete-redis.sh
+
+tests: delete-redis
 	go test

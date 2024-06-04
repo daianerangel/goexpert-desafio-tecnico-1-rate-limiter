@@ -25,7 +25,7 @@ func StartRedis() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cmd := exec.Command("docker", "run", "-d", "--name", "redis-test", "-p", "6379:6379", "redis:alpine")
+	cmd := exec.Command("docker", "run", "-d", "--name", "redis-container-test", "-p", "6379:6379", "redis:alpine")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to start Redis container: %v, output: %s", err, out)
